@@ -12,6 +12,9 @@ class UserController {
       password: Yup.string()
         .required()
         .min(6),
+      confirmPassword: Yup.string()
+        .required()
+        .oneOf([Yup.ref('password')]),
     });
 
     if (!(await schema.isValid(req.body))) {
@@ -57,7 +60,7 @@ class UserController {
 
     const user = await User.findByPk(req.userId);
 
-    if (email !== user.email) {
+    if (email && email !== user.email) {
       const userExists = await User.findOne({ where: { email } });
 
       if (userExists) {
