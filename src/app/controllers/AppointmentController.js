@@ -1,5 +1,5 @@
 import * as Yup from 'yup';
-import { startOfHour, parseISO, isBefore, format } from 'date-fns';
+import { startOfHour, parseISO, isBefore, format, subHours } from 'date-fns';
 import pt from 'date-fns/locale/pt';
 import User from '../models/User';
 import File from '../models/File';
@@ -102,6 +102,54 @@ class AppointmentController {
     await Notification.create({
       content: `Novo agendamento de ${user.name} para ${formattedDate}`,
       user: provider_id,
+    });
+
+    return res.json(appointment);
+  }
+
+  async delete(req, res) {
+    const appointment = await Appointment.findByPk(req.params.id);
+
+    if (!appointment) {
+      return res.status(400).json({ error: 'Appointment does not exists' });
+    }
+
+    if (appointment.user_id !== req.userId) {
+      return res.status(401).json({
+        error: "You don't have permission to cancel this appointment",
+      });
+    }
+
+    if (appointment.canceled_at) {
+      return res.status(400).json({
+        error: `Appointment already canceled at ${appointment.canceled_at}`,
+      });
+    }
+
+    const maxDate = subHours(appointment.date, 2);
+
+    if (isBefore(maxDate, new Date())) {
+      return res.status(401).json({
+        error: 'You can only cancel appointments 2 hours in advance',
+      });
+    }
+
+    appointment.canceled_at = new Date();
+
+    await appointment.save(appointment);
+
+    // Notify appointment provider
+
+    const user = await User.findByPk(req.userId);
+    const formattedDate = format(
+      appointment.date,
+      "'dia' dd 'de' MMMM', às' H:mm'h'",
+      { locale: pt }
+    );
+
+    await Notification.create({
+      content: `${user.name} cancelou o agendamento para ${formattedDate}`,
+      user: appointment.provider_id,
     });
 
     return res.json(appointment);
