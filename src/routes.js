@@ -11,6 +11,7 @@ import authMiddleware from './app/middlewares/auth';
 import providerAccessMiddleware from './app/middlewares/providerAccess';
 import AppointmentController from './app/controllers/AppointmentController';
 import ScheduleController from './app/controllers/ScheduleController';
+import NotificationController from './app/controllers/NotificationController';
 
 const routes = new Router();
 const upload = multer(multerConfig);
@@ -31,5 +32,6 @@ routes.get('/providers', ProviderController.index);
 routes.use(providerAccessMiddleware);
 
 routes.get('/schedule', ScheduleController.index);
+routes.get('/notifications', NotificationController.index);
 
 export default routes;
