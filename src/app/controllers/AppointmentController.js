@@ -6,6 +6,8 @@ import File from '../models/File';
 import Appointment from '../models/Appointment';
 import Notification from '../schemas/Notification';
 
+import Mail from '../../lib/Mail';
+
 class AppointmentController {
   async index(req, res) {
     const { page = 1 } = req.query;
@@ -108,10 +110,18 @@ class AppointmentController {
   }
 
   async delete(req, res) {
-    const appointment = await Appointment.findByPk(req.params.id);
+    const appointment = await Appointment.findByPk(req.params.id, {
+      include: [
+        {
+          model: User,
+          as: 'provider',
+          attributes: ['name', 'email'],
+        },
+      ],
+    });
 
     if (!appointment) {
-      return res.status(400).json({ error: 'Appointment does not exists' });
+      return res.status(400).json({ error: 'Appointment does not exist' });
     }
 
     if (appointment.user_id !== req.userId) {
@@ -150,6 +160,13 @@ class AppointmentController {
     await Notification.create({
       content: `${user.name} cancelou o agendamento para ${formattedDate}`,
       user: appointment.provider_id,
+    });
+
+    // Send mail to provider - async
+    Mail.sendMail({
+      to: `${appointment.provider.name} <${appointment.provider.email}>`,
+      subject: 'Agendamento Cancelado',
+      text: 'Você tem um novo cancelamento',
     });
 
     return res.json(appointment);
