@@ -10,6 +10,7 @@ import UserController from './app/controllers/UserController';
 import authMiddleware from './app/middlewares/auth';
 import providerAccessMiddleware from './app/middlewares/providerAccess';
 import AppointmentController from './app/controllers/AppointmentController';
+import ScheduleController from './app/controllers/ScheduleController';
 
 const routes = new Router();
 const upload = multer(multerConfig);
@@ -28,5 +29,7 @@ routes.get('/providers', ProviderController.index);
 
 // Provider Access only
 routes.use(providerAccessMiddleware);
+
+routes.get('/schedule', ScheduleController.index);
 
 export default routes;
