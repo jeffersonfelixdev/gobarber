@@ -6,7 +6,8 @@ import File from '../models/File';
 import Appointment from '../models/Appointment';
 import Notification from '../schemas/Notification';
 
-import Mail from '../../lib/Mail';
+import Queue from '../../lib/Queue';
+import CancellationMail from '../jobs/CancellationMail';
 
 class AppointmentController {
   async index(req, res) {
@@ -162,11 +163,9 @@ class AppointmentController {
       user: appointment.provider_id,
     });
 
-    // Send mail to provider - async
-    Mail.sendMail({
-      to: `${appointment.provider.name} <${appointment.provider.email}>`,
-      subject: 'Agendamento Cancelado',
-      text: 'Você tem um novo cancelamento',
+    // Send mail to provider - bee-queue
+    await Queue.add(CancellationMail.key, {
+      appointment,
     });
 
     return res.json(appointment);
