@@ -71,7 +71,7 @@ Return:
 
 ## Other API functions
 
-See much more export [Insomnia_gobarber.json](https://github.com/jsfelix/gobarber/blob/master/Insomnia_gobarber.json 'Insomnia config') to your Insomnia workspace!
+See much more export [Insomnia_gobarber.json](https://raw.githubusercontent.com/jsfelix/gobarber/master/Insomnia_gobarber.json 'Insomnia config') to your Insomnia workspace!
 
 ## Thanks to
 
